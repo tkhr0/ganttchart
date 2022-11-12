@@ -1,14 +1,19 @@
-use actix_files::NamedFile;
-use actix_web::{get, App, HttpServer, Responder};
+use actix_web::{guard, web, App, HttpResponse, HttpServer, Result};
+use async_graphql::http::GraphiQLSource;
 
-#[get("/")]
-async fn root() -> impl Responder {
-    NamedFile::open_async("./src/assets/index.html").await
+async fn graphiql() -> Result<HttpResponse> {
+    Ok(HttpResponse::Ok()
+        .content_type("text/html; charset=utf-8")
+        .body(
+            GraphiQLSource::build()
+                .endpoint("http://localhost:8080")
+                .finish(),
+        ))
 }
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    HttpServer::new(|| App::new().service(root))
+    HttpServer::new(move || App::new().service(web::resource("/").guard(guard::Get()).to(graphiql)))
         .bind(("127.0.0.1", 8080))?
         .run()
         .await

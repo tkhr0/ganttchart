@@ -20,13 +20,7 @@
         "*.tsx"
       ],
       "rules": {
-        "@typescript-eslint/indent": [
-          "error",
-          2,
-          {
-            "SwitchCase": 1
-          }
-        ]
+        "@typescript-eslint/indent": "off"
       }
     }
   ],
