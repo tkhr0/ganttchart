@@ -22,6 +22,8 @@ async fn graphiql() -> Result<HttpResponse> {
 async fn main() -> std::io::Result<()> {
     let schema = Schema::build(Query::default(), EmptyMutation, EmptySubscription).finish();
 
+    println!("{}", &schema.sdl());
+
     HttpServer::new(move || {
         App::new()
             .app_data(Data::new(schema.clone()))

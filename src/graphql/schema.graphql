@@ -1,0 +1,12 @@
+type Query {
+	tasks: [Task!]!
+}
+
+
+type Task {
+	name: String!
+}
+
+schema {
+	query: Query
+}

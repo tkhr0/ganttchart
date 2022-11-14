@@ -5,6 +5,7 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "incremental": true,
+    "importsNotUsedAsValues": "remove", // src/gql/fragment-masking.ts, src/gql/gql.ts のため
     "isolatedModules": true,
     "jsx": "react-jsx",
     "lib": ["dom", "dom.iterable", "esnext"],
@@ -15,6 +16,6 @@
     "skipLibCheck": true,
     "strict": true
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "script/**/*.ts"],
   "exclude": ["node_modules"]
 }

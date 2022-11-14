@@ -31,7 +31,7 @@
   "plugins": [
     "react"
   ],
-  "ignorePatterns": ["dist/", "target/"],
+  "ignorePatterns": ["dist/", "target/", "src/gql/"],
   "settings": {
     "react": {
       "version": "detect"

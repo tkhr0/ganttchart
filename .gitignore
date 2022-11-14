@@ -3,5 +3,6 @@
 
 # NodeJS
 /dist
+/src/gql/
 /node_modules
 tsconfig.tsbuildinfo
