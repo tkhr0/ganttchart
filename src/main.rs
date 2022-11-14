@@ -27,7 +27,7 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
             .app_data(Data::new(schema.clone()))
-            .service(web::resource("/").guard(guard::Post()).to(index))
+            .service(web::resource("/graphql").guard(guard::Post()).to(index))
             .service(web::resource("/").guard(guard::Get()).to(graphiql))
     })
     .bind(("127.0.0.1", 8080))?
