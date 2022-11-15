@@ -1,7 +1,9 @@
+use std::path::Path;
+
 use async_graphql::{EmptyMutation, EmptySubscription, Schema};
 use clap::{Parser, Subcommand};
 
-use ganttchart::graphql::Query;
+use ganttchart::graphql::{dump, Query};
 use ganttchart::server;
 
 #[derive(Parser)]
@@ -25,7 +27,8 @@ async fn main() -> std::io::Result<()> {
     match cli.command {
         Command::Server => server::server(schema().clone()).await?.await,
         Command::Dump => {
-            println!("{}", &schema().sdl());
+            let path = Path::new("./src/graphql");
+            dump(&path, &schema()).expect("dump error");
             Ok(())
         }
     }
