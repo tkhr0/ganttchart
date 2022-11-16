@@ -2,6 +2,22 @@
 
 
 
+type Member {
+	name: String!
+	role: Role!
+}
+
+"""
+ISO 8601 calendar date without timezone.
+Format: %Y-%m-%d
+
+# Examples
+
+* `1994-11-13`
+* `2000-02-24`
+"""
+scalar NaiveDate
+
 type Organization {
 	name: String!
 	projects: [Project!]!
@@ -17,9 +33,26 @@ type Query {
 	organizations: [Organization!]!
 }
 
+type Role {
+	name: String!
+}
+
+enum Status {
+	NONE
+	TODO
+	WIP
+	DONE
+}
+
 
 type Task {
 	name: String!
+	beginDate: NaiveDate
+	endDate: NaiveDate
+	estimatedHours: Int!
+	assignee: Member
+	assignableRole: Role
+	status: Status!
 }
 
 type Team {
