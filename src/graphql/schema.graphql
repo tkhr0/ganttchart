@@ -2,12 +2,27 @@
 
 
 
+type Organization {
+	name: String!
+	projects: [Project!]!
+}
+
+type Project {
+	name: String!
+	teams: [Team!]!
+}
+
 type Query {
 	tasks: [Task!]!
+	organizations: [Organization!]!
 }
 
 
 type Task {
+	name: String!
+}
+
+type Team {
 	name: String!
 }
 
