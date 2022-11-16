@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 actix-cors = "0.6.4"
 actix-web = "4"
-async-graphql = "4.0"
+async-graphql = { version = "4.0", features = ["chrono"] }
 async-graphql-actix-web = "4.0"
+chrono = "0.4"
 clap = { version = "4.0.23", features = ["derive"] }
