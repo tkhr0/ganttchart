@@ -1,4 +1,5 @@
 const { env } = require("node:process");
+const cssModulesPlugin = require("esbuild-css-modules-plugin");
 
 const watch = env.NO_WATCH
   ? false
@@ -19,4 +20,5 @@ require("esbuild").build({
   jsx: "automatic",
   target: ["es6"],
   watch,
+  plugins: [cssModulesPlugin()],
 });

@@ -1,7 +1,9 @@
 import { useQuery } from "urql";
+import { clsx } from "clsx";
 
 import { graphql } from "../../../gql";
 import type { Task } from "../../../gql/graphql";
+import style from "./tasks.module.css";
 
 const tasksQuery = graphql(`
   query tasks {
@@ -32,7 +34,7 @@ export const Tasks = () => {
   }
 
   return (
-    <div>
+    <div className={clsx(style.center)}>
       {data?.tasks.map((task: Task, i) => {
         return (
           <div key={i}>
