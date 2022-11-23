@@ -53,6 +53,7 @@ type Task {
 	assignee: Member
 	assignableRole: Role
 	status: Status!
+	followings: [Task!]!
 }
 
 type Team {

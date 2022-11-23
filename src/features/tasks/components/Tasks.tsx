@@ -22,6 +22,9 @@ const tasksQuery = graphql(`
         name
       }
       status
+      followings {
+        name
+      }
     }
   }
 `);
@@ -46,6 +49,9 @@ export const Tasks = () => {
             <p>{task.assignee.role.name}</p>
             <p>{task.assignableRole.name}</p>
             <p>{task.status}</p>
+            {task.followings.map((task: Task, i) => {
+              return <p key={i}>{task.name}</p>;
+            })}
           </div>
         );
       })}

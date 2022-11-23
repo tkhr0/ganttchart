@@ -16,6 +16,7 @@ pub struct Task {
     assignee: Option<Member>,
     assignable_role: Option<Role>,
     status: Status,
+    followings: Vec<Task>,
 }
 
 impl Task {
@@ -27,6 +28,7 @@ impl Task {
         assignee: Option<Member>,
         assignable_role: Option<Role>,
         status: Status,
+        followings: Vec<Self>,
     ) -> Self {
         Self {
             name,
@@ -36,6 +38,7 @@ impl Task {
             assignee,
             assignable_role,
             status,
+            followings,
         }
     }
 }
@@ -43,13 +46,23 @@ impl Task {
 impl Default for Task {
     fn default() -> Self {
         Self::new(
-            "Hoge Role".to_string(),
+            "Hoge Task".to_string(),
             Some(NaiveDate::from_ymd_opt(2022, 1, 1).unwrap()),
             Some(NaiveDate::from_ymd_opt(2022, 1, 3).unwrap()),
             0,
             Some(Member::default()),
             Some(Role::default()),
             Status::default(),
+            vec![Self::new(
+                "Dependent Task".to_string(),
+                None,
+                None,
+                0,
+                None,
+                None,
+                Status::default(),
+                vec![],
+            )],
         )
     }
 }
