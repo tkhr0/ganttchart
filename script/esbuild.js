@@ -20,5 +20,9 @@ require("esbuild").build({
   jsx: "automatic",
   target: ["es6"],
   watch,
-  plugins: [cssModulesPlugin()],
+  plugins: [
+    cssModulesPlugin({
+      filter: /\.module?\.css$/i,
+    }),
+  ],
 });
