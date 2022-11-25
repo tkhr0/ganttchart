@@ -1,33 +1,37 @@
 import { useQuery } from "urql";
-import { clsx } from "clsx";
+import type { Node, Edge } from "reactflow";
+import ReactFlow, {
+  MiniMap,
+  Controls,
+  Background,
+  useNodesState,
+  useEdgesState,
+} from "reactflow";
+import "reactflow/dist/style.css";
 
 import { graphql } from "../../../gql";
-import type { Task } from "../../../gql/graphql";
-import style from "./tasks.module.css";
+import type { Task as FullTask } from "../../../gql/graphql";
 
 const tasksQuery = graphql(`
   query tasks {
     tasks {
+      id
       name
-      beginDate
-      endDate
-      estimatedHours
-      assignee {
-        name
-        role {
-          name
-        }
-      }
-      assignableRole {
-        name
-      }
-      status
-      followings {
-        name
-      }
     }
   }
 `);
+
+type Task = Pick<FullTask, "id" | "name">;
+type TaskNode = Node<Task & { label: string }>;
+type TaskEdge = Edge<Record<string, unknown>>;
+
+const taskToNode = (task: Task, index: number): TaskNode => {
+  return {
+    id: task.id.toString(),
+    position: { x: 0, y: index * 100 },
+    data: { ...task, label: task.name },
+  };
+};
 
 export const Tasks = () => {
   const [{ data, fetching }] = useQuery({ query: tasksQuery });
@@ -36,25 +40,29 @@ export const Tasks = () => {
     return <></>;
   }
 
+  return <TaskFlow tasks={data?.tasks ?? []} />;
+};
+
+const TaskFlow = ({ tasks }: { tasks: Task[] }) => {
+  const initialEdges: TaskEdge[] = [
+    // { id: "e1-2", source: "1", target: "2" }
+  ];
+
+  const [nodes, _setNodes, onNodesChange] = useNodesState(
+    tasks.map((task, i) => taskToNode(task, i))
+  );
+  const [edges, _setEdges, onEdgesChange] = useEdgesState(initialEdges);
+
   return (
-    <div className={clsx(style.center)}>
-      {data?.tasks.map((task: Task, i) => {
-        return (
-          <div key={i}>
-            <p>{task.name}</p>
-            <p>{task.beginDate}</p>
-            <p>{task.endDate}</p>
-            <p>{task.estimatedHours}</p>
-            <p>{task.assignee.name}</p>
-            <p>{task.assignee.role.name}</p>
-            <p>{task.assignableRole.name}</p>
-            <p>{task.status}</p>
-            {task.followings.map((task: Task, i) => {
-              return <p key={i}>{task.name}</p>;
-            })}
-          </div>
-        );
-      })}
-    </div>
+    <ReactFlow
+      nodes={nodes}
+      edges={edges}
+      onNodesChange={onNodesChange}
+      onEdgesChange={onEdgesChange}
+    >
+      <MiniMap />
+      <Controls />
+      <Background />
+    </ReactFlow>
   );
 };

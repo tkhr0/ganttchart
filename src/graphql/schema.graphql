@@ -46,6 +46,7 @@ enum Status {
 
 
 type Task {
+	id: Int!
 	name: String!
 	beginDate: NaiveDate
 	endDate: NaiveDate

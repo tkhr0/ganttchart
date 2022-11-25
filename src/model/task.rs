@@ -9,6 +9,7 @@ use super::Status;
 
 #[derive(Debug, SimpleObject)]
 pub struct Task {
+    id: u64,
     name: String,
     begin_date: Option<NaiveDate>,
     end_date: Option<NaiveDate>,
@@ -21,6 +22,7 @@ pub struct Task {
 
 impl Task {
     pub fn new(
+        id: u64,
         name: String,
         begin_date: Option<NaiveDate>,
         end_date: Option<NaiveDate>,
@@ -31,6 +33,7 @@ impl Task {
         followings: Vec<Self>,
     ) -> Self {
         Self {
+            id,
             name,
             begin_date,
             end_date,
@@ -46,6 +49,7 @@ impl Task {
 impl Default for Task {
     fn default() -> Self {
         Self::new(
+            1,
             "Hoge Task".to_string(),
             Some(NaiveDate::from_ymd_opt(2022, 1, 1).unwrap()),
             Some(NaiveDate::from_ymd_opt(2022, 1, 3).unwrap()),
@@ -54,6 +58,7 @@ impl Default for Task {
             Some(Role::default()),
             Status::default(),
             vec![Self::new(
+                2,
                 "Dependent Task".to_string(),
                 None,
                 None,
