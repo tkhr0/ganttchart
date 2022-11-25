@@ -1,4 +1,5 @@
 import { useQuery } from "urql";
+import { Position } from "reactflow";
 import type { Node, Edge } from "reactflow";
 import ReactFlow, {
   MiniMap,
@@ -17,20 +18,35 @@ const tasksQuery = graphql(`
     tasks {
       id
       name
+      followingIds
     }
   }
 `);
 
-type Task = Pick<FullTask, "id" | "name">;
+type Task = Pick<FullTask, "id" | "name" | "followingIds">;
 type TaskNode = Node<Task & { label: string }>;
 type TaskEdge = Edge<Record<string, unknown>>;
+type Flow = {
+  node: TaskNode;
+  edges: TaskEdge[];
+};
 
-const taskToNode = (task: Task, index: number): TaskNode => {
-  return {
+const taskToFlow = (task: Task, index: number): Flow => {
+  const node: TaskNode = {
     id: task.id.toString(),
-    position: { x: 0, y: index * 100 },
+    position: { x: index * 300, y: 100 },
     data: { ...task, label: task.name },
+    targetPosition: Position.Left,
+    sourcePosition: Position.Right,
   };
+
+  const edges: TaskEdge[] = task.followingIds.map((followingId: number) => ({
+    id: `${task.id}-${followingId}`,
+    source: `${task.id}`,
+    target: `${followingId}`,
+  }));
+
+  return { node, edges };
 };
 
 export const Tasks = () => {
@@ -44,14 +60,23 @@ export const Tasks = () => {
 };
 
 const TaskFlow = ({ tasks }: { tasks: Task[] }) => {
-  const initialEdges: TaskEdge[] = [
-    // { id: "e1-2", source: "1", target: "2" }
-  ];
+  const flow = tasks.reduce(
+    (prev, task, i) => {
+      const { node, edges } = taskToFlow(task, i);
 
-  const [nodes, _setNodes, onNodesChange] = useNodesState(
-    tasks.map((task, i) => taskToNode(task, i))
+      return {
+        nodes: [...prev.nodes, node],
+        edges: prev.edges.concat(edges),
+      };
+    },
+    {
+      nodes: [] as TaskNode[],
+      edges: [] as TaskEdge[],
+    }
   );
-  const [edges, _setEdges, onEdgesChange] = useEdgesState(initialEdges);
+
+  const [nodes, _setNodes, onNodesChange] = useNodesState(flow.nodes);
+  const [edges, _setEdges, onEdgesChange] = useEdgesState(flow.edges);
 
   return (
     <ReactFlow

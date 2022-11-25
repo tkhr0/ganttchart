@@ -7,9 +7,11 @@ use super::Member;
 use super::Role;
 use super::Status;
 
+type Id = u64;
+
 #[derive(Debug, SimpleObject)]
 pub struct Task {
-    id: u64,
+    id: Id,
     name: String,
     begin_date: Option<NaiveDate>,
     end_date: Option<NaiveDate>,
@@ -17,12 +19,12 @@ pub struct Task {
     assignee: Option<Member>,
     assignable_role: Option<Role>,
     status: Status,
-    followings: Vec<Task>,
+    following_ids: Vec<Id>,
 }
 
 impl Task {
     pub fn new(
-        id: u64,
+        id: Id,
         name: String,
         begin_date: Option<NaiveDate>,
         end_date: Option<NaiveDate>,
@@ -30,7 +32,7 @@ impl Task {
         assignee: Option<Member>,
         assignable_role: Option<Role>,
         status: Status,
-        followings: Vec<Self>,
+        following_ids: Vec<Id>,
     ) -> Self {
         Self {
             id,
@@ -41,7 +43,7 @@ impl Task {
             assignee,
             assignable_role,
             status,
-            followings,
+            following_ids,
         }
     }
 }
@@ -57,17 +59,7 @@ impl Default for Task {
             Some(Member::default()),
             Some(Role::default()),
             Status::default(),
-            vec![Self::new(
-                2,
-                "Dependent Task".to_string(),
-                None,
-                None,
-                0,
-                None,
-                None,
-                Status::default(),
-                vec![],
-            )],
+            vec![],
         )
     }
 }

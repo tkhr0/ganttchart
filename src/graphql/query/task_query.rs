@@ -20,7 +20,7 @@ impl TaskQuery {
                 Some(Member::default()),
                 Some(Role::default()),
                 Status::default(),
-                vec![],
+                vec![2],
             ),
             Task::new(
                 2,
@@ -31,7 +31,7 @@ impl TaskQuery {
                 Some(Member::default()),
                 Some(Role::default()),
                 Status::default(),
-                vec![],
+                vec![3],
             ),
             Task::new(
                 3,
