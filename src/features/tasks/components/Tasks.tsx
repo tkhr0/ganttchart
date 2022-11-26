@@ -11,6 +11,7 @@ import ReactFlow, {
 import "reactflow/dist/style.css";
 
 import { graphql } from "../../../gql";
+import type { Status } from "../../../gql/graphql";
 import type { Task as FullTask } from "../../../gql/graphql";
 
 const tasksQuery = graphql(`
@@ -18,51 +19,43 @@ const tasksQuery = graphql(`
     tasks {
       id
       name
+      status
       followingIds
     }
   }
 `);
 
-type Task = Pick<FullTask, "id" | "name" | "followingIds">;
-type TaskNode = Node<Task & { label: string }>;
+const statusQuery = graphql(`
+  query statuses {
+    statuses
+  }
+`);
+
+type StatusNodeData = { status: Status; label: string };
+type StatusNode = Node<StatusNodeData>;
+type Task = Pick<FullTask, "id" | "name" | "followingIds" | "status">;
+type TaskNodeData = Task & { label: string };
+type TaskNode = Node<TaskNodeData>;
 type TaskEdge = Edge<Record<string, unknown>>;
 type Flow = {
   node: TaskNode;
   edges: TaskEdge[];
 };
 
-const taskToFlow = (task: Task, index: number): Flow => {
-  const node: TaskNode = {
-    id: task.id.toString(),
-    position: { x: index * 300, y: 100 },
-    data: { ...task, label: task.name },
-    targetPosition: Position.Left,
-    sourcePosition: Position.Right,
-  };
+const tasksToFlow = ({
+  tasks,
+}: {
+  tasks: Task[];
+}): { nodes: TaskNode[]; edges: TaskEdge[] } => {
+  const countPerStatus: { [K in `${Status}`]?: number } = {};
 
-  const edges: TaskEdge[] = task.followingIds.map((followingId: number) => ({
-    id: `${task.id}-${followingId}`,
-    source: `${task.id}`,
-    target: `${followingId}`,
-  }));
+  return tasks.reduce(
+    (prev, task) => {
+      const { node, edges } = taskToFlow(task);
 
-  return { node, edges };
-};
-
-export const Tasks = () => {
-  const [{ data, fetching }] = useQuery({ query: tasksQuery });
-
-  if (fetching) {
-    return <></>;
-  }
-
-  return <TaskFlow tasks={data?.tasks ?? []} />;
-};
-
-const TaskFlow = ({ tasks }: { tasks: Task[] }) => {
-  const flow = tasks.reduce(
-    (prev, task, i) => {
-      const { node, edges } = taskToFlow(task, i);
+      const countOfThisStatus = countPerStatus[node.data.status] ?? 0;
+      node.position.y = countOfThisStatus * 100;
+      countPerStatus[node.data.status] = countOfThisStatus + 1;
 
       return {
         nodes: [...prev.nodes, node],
@@ -74,8 +67,69 @@ const TaskFlow = ({ tasks }: { tasks: Task[] }) => {
       edges: [] as TaskEdge[],
     }
   );
+};
 
-  const [nodes, _setNodes, onNodesChange] = useNodesState(flow.nodes);
+const taskToFlow = (task: Task): Flow => {
+  const node: TaskNode = {
+    id: task.id.toString(),
+    position: { x: 0, y: 0 },
+    data: { ...task, label: task.name },
+    targetPosition: Position.Left,
+    sourcePosition: Position.Right,
+    parentNode: task.status,
+    extent: "parent",
+  };
+
+  const edges: TaskEdge[] = task.followingIds.map((followingId: number) => ({
+    id: `${task.id}-${followingId}`,
+    source: `${task.id}`,
+    target: `${followingId}`,
+  }));
+
+  return { node, edges };
+};
+
+export const Tasks = (): JSX.Element => {
+  const [statusesQueryResult] = useQuery({ query: statusQuery });
+  const [tasksQueryResult] = useQuery({ query: tasksQuery });
+
+  if (statusesQueryResult.fetching || tasksQueryResult.fetching) {
+    return <></>;
+  }
+
+  return (
+    <TaskFlow
+      tasks={tasksQueryResult.data?.tasks ?? []}
+      statuses={statusesQueryResult.data?.statuses ?? []}
+    />
+  );
+};
+
+const TaskFlow = ({
+  tasks,
+  statuses,
+}: {
+  tasks: Task[];
+  statuses: Status[];
+}) => {
+  const statusNodes: StatusNode[] = statuses.map((status, i) => {
+    return {
+      id: status,
+      position: { x: i * 400, y: 200 },
+      data: { status, label: status },
+      type: "group",
+      style: {
+        width: 300,
+        height: 300,
+      },
+    };
+  });
+
+  const flow = tasksToFlow({ tasks });
+
+  const [nodes, _setNodes, onNodesChange] = useNodesState<
+    StatusNodeData | TaskNodeData
+  >([...statusNodes, ...flow.nodes]);
   const [edges, _setEdges, onEdgesChange] = useEdgesState(flow.edges);
 
   return (
