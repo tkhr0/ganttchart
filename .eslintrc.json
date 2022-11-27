@@ -22,6 +22,12 @@
       "rules": {
         "@typescript-eslint/indent": "off"
       }
+    },
+    {
+      "files": ["*.tsx"],
+      "rules": {
+        "func-names": "off"
+      }
     }
   ],
   "parserOptions": {

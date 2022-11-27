@@ -1,0 +1,12 @@
+.body {
+  width: 200px;
+  padding: 10px;
+  font-size: 12px;
+  color: #222;
+  text-align: center;
+  background-color: white;
+  border-color: #1a192b;
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 3px;
+}

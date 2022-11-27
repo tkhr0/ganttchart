@@ -1,3 +1,4 @@
+import { useEffect, useMemo } from "react";
 import { useQuery } from "urql";
 import { Position } from "reactflow";
 import type { Node, Edge } from "reactflow";
@@ -13,6 +14,7 @@ import "reactflow/dist/style.css";
 import { graphql } from "../../../gql";
 import type { Status } from "../../../gql/graphql";
 import type { Task as FullTask } from "../../../gql/graphql";
+import { taskNodeType } from "./Task";
 
 const tasksQuery = graphql(`
   query tasks {
@@ -32,26 +34,46 @@ const statusQuery = graphql(`
 `);
 
 type StatusNodeData = { status: Status; label: string };
-type StatusNode = Node<StatusNodeData>;
+type StatusNode = Node<StatusNodeData> & { type: "group" };
 type Task = Pick<FullTask, "id" | "name" | "followingIds" | "status">;
-type TaskNodeData = Task & { label: string };
-type TaskNode = Node<TaskNodeData>;
+export type TaskNodeData = Task & {
+  statuses: Status[];
+  onChagneStatus: HandleChangeStatus;
+} & { label: string };
+type TaskNode = Node<TaskNodeData> & { type: "task" };
 type TaskEdge = Edge<Record<string, unknown>>;
 type Flow = {
   node: TaskNode;
   edges: TaskEdge[];
 };
+export type HandleChangeStatus = ({
+  id,
+  nextStatus,
+  prevStatus,
+}: {
+  id: number;
+  nextStatus: Status;
+  prevStatus: Status;
+}) => void;
 
 const tasksToFlow = ({
   tasks,
+  statuses,
+  handleChangeStatus,
 }: {
   tasks: Task[];
+  statuses: Status[];
+  handleChangeStatus: HandleChangeStatus;
 }): { nodes: TaskNode[]; edges: TaskEdge[] } => {
   const countPerStatus: { [K in `${Status}`]?: number } = {};
 
   return tasks.reduce(
     (prev, task) => {
-      const { node, edges } = taskToFlow(task);
+      const { node, edges } = taskToFlow({
+        task,
+        statuses,
+        handleChangeStatus,
+      });
 
       const countOfThisStatus = countPerStatus[node.data.status] ?? 0;
       node.position.y = countOfThisStatus * 100;
@@ -69,15 +91,29 @@ const tasksToFlow = ({
   );
 };
 
-const taskToFlow = (task: Task): Flow => {
+const taskToFlow = ({
+  task,
+  statuses,
+  handleChangeStatus,
+}: {
+  task: Task;
+  statuses: Status[];
+  handleChangeStatus: HandleChangeStatus;
+}): Flow => {
   const node: TaskNode = {
     id: task.id.toString(),
     position: { x: 0, y: 0 },
-    data: { ...task, label: task.name },
+    data: {
+      ...task,
+      statuses,
+      onChagneStatus: handleChangeStatus,
+      label: task.name,
+    },
     targetPosition: Position.Left,
     sourcePosition: Position.Right,
     parentNode: task.status,
     extent: "parent",
+    type: "task",
   };
 
   const edges: TaskEdge[] = task.followingIds.map((followingId: number) => ({
@@ -112,6 +148,12 @@ const TaskFlow = ({
   tasks: Task[];
   statuses: Status[];
 }) => {
+  const [nodes, setNodes, onNodesChange] = useNodesState<
+    StatusNodeData | TaskNodeData
+  >([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const nodeTypes = useMemo(() => ({ ...taskNodeType }), []);
+
   const statusNodes: StatusNode[] = statuses.map((status, i) => {
     return {
       id: status,
@@ -125,12 +167,38 @@ const TaskFlow = ({
     };
   });
 
-  const flow = tasksToFlow({ tasks });
+  const handleChangeStatus: HandleChangeStatus = ({ id, nextStatus }) => {
+    setNodes((nodes) => {
+      const countPerStatus: { [K in `${Status}`]?: number } = {};
+      const updatePosition = (node: Node<StatusNodeData | TaskNodeData>) => {
+        if (node.type === "group") {
+          return;
+        }
 
-  const [nodes, _setNodes, onNodesChange] = useNodesState<
-    StatusNodeData | TaskNodeData
-  >([...statusNodes, ...flow.nodes]);
-  const [edges, _setEdges, onEdgesChange] = useEdgesState(flow.edges);
+        const countOfThisStatus = countPerStatus[node.data.status] ?? 0;
+        node.position.y = countOfThisStatus * 100;
+        countPerStatus[node.data.status] = countOfThisStatus + 1;
+      };
+
+      return nodes.map((node) => {
+        if (node.id === id.toString()) {
+          node.data.status = nextStatus;
+          node.parentNode = nextStatus;
+        }
+
+        updatePosition(node);
+
+        return node;
+      });
+    });
+  };
+
+  const flow = tasksToFlow({ tasks, statuses, handleChangeStatus });
+
+  useEffect(() => {
+    setNodes([...statusNodes, ...flow.nodes]);
+    setEdges(flow.edges);
+  }, []);
 
   return (
     <ReactFlow
@@ -138,6 +206,7 @@ const TaskFlow = ({
       edges={edges}
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
+      nodeTypes={nodeTypes}
     >
       <MiniMap />
       <Controls />
