@@ -11,9 +11,9 @@ import ReactFlow, {
 } from "reactflow";
 import "reactflow/dist/style.css";
 
-import { graphql } from "../../../gql";
-import type { Status } from "../../../gql/graphql";
-import type { Task as FullTask } from "../../../gql/graphql";
+import { graphql } from "gql";
+import type { Status } from "gql/graphql";
+import type { Task as FullTask } from "gql/graphql";
 import { taskNodeType } from "./Task";
 
 const tasksQuery = graphql(`

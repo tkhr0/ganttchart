@@ -12,6 +12,7 @@
     "module": "esnext",
     "moduleResolution": "node",
     "noEmit": true,
+    "baseUrl": "./src/",
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": true

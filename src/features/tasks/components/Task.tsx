@@ -2,7 +2,7 @@ import { memo, useState, type ChangeEvent } from "react";
 import { Handle, Position } from "reactflow";
 import { clsx } from "clsx";
 
-import type { Status } from "../../../gql/graphql";
+import type { Status } from "gql/graphql";
 
 import type { TaskNodeData } from "./Tasks";
 import style from "./Task.module.css";

@@ -1,7 +1,7 @@
 import { useQuery } from "urql";
 
-import { graphql } from "../../../gql";
-import type { Organization, Project, Team } from "../../../gql/graphql";
+import { graphql } from "gql";
+import type { Organization, Project, Team } from "gql/graphql";
 
 const organizationQuery = graphql(`
   query organizations {
