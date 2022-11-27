@@ -1,13 +1,18 @@
-import { memo, useState, type ChangeEvent } from "react";
+import { memo, useState } from "react";
+import type { ChangeEvent } from "react";
 import { Handle, Position } from "reactflow";
 import { clsx } from "clsx";
 
 import type { Status } from "gql/graphql";
 
-import type { TaskNodeData } from "./Tasks";
+import type { TaskNodeData } from "../../types";
 import style from "./Task.module.css";
 
-const Task = memo(function task({ data }: { data: TaskNodeData }): JSX.Element {
+export const Task = memo(function task({
+  data,
+}: {
+  data: TaskNodeData;
+}): JSX.Element {
   const [status, setStatus] = useState<Status[keyof Status]>(data.status);
 
   const handleChangeStatus = (evt: ChangeEvent<HTMLSelectElement>) => {
@@ -37,7 +42,3 @@ const Task = memo(function task({ data }: { data: TaskNodeData }): JSX.Element {
     </div>
   );
 });
-
-export const taskNodeType = {
-  task: Task,
-} as const;
